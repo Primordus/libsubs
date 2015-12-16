@@ -17,4 +17,3 @@ typedef struct
  * Returns the hash for that episode or 0xffffffff on error (e.g. wrong episode name)
  */
 HashResult calc_hash(const char* const episode_name);
-
