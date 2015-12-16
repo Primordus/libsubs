@@ -1,36 +1,49 @@
 pub mod movie_hash {
     
     use libc;
+    use libc::{c_char, c_void};
     use std::ffi::CString;
-
-    // This has to be inside the module, otherwise not found!
-    // And error messages don't really help..
-
-    #[allow(dead_code)]
-    #[repr(C)]
-    enum ResultType {
-        OK,
-        FILE_NOT_FOUND
-    }
-
-    #[repr(C)]
-    struct HashResult {
-        result_type: ResultType,
-        hash: libc::uint64_t
-    }
 
     #[link(name = "movie_hash", kind = "static")]
     extern {
-        fn calc_hash(episode_name: *const libc::c_char) -> HashResult;
+        fn calculate_hash(episode_name: *const c_char) -> *mut c_void;
+        fn destroy_hash(hash: *mut c_void);
+        fn is_valid_hash(hash: *const c_void) -> bool;
+        fn get_hash(hash: *const c_void) -> u64;
     }
 
     pub fn compute_hash(episode: &'static str) -> Result<u64, &'static str> {
-        let episode_name = CString::new(episode).unwrap();
-        unsafe {
-            match calc_hash(episode_name.as_ptr()) {
-                HashResult { result_type: ResultType::OK, hash } => Ok(hash),
-                HashResult { result_type: ResultType::FILE_NOT_FOUND, .. } => Err("File not found!")
+        Hash::new(episode).get()
+    }
+
+    struct Hash {
+        ptr: *mut libc::c_void  // raw void ptr.
+    }
+
+    impl Hash {
+
+        fn new(episode: &'static str) -> Hash {
+            let episode_name = CString::new(episode).unwrap();
+            Hash {
+                ptr: unsafe { calculate_hash(episode_name.as_ptr()) }
             }
+        }
+
+        fn get(&self) -> Result<u64, &'static str> {
+            unsafe {
+                if is_valid_hash(self.ptr) {
+                    return Ok(get_hash(self.ptr));
+                }
+            }
+
+            // TODO make error more descriptive!
+            Err("Problem calculating hash!")
+        }
+    }
+
+    impl Drop for Hash {
+        fn drop(&mut self) {
+            unsafe { destroy_hash(self.ptr); }
         }
     }
 
@@ -46,7 +59,7 @@ pub mod movie_hash {
             panic!("Failed to run download script: {}!", e);
         });
 
-        assert!(compute_hash("unknown_file") == Err("File not found!"));
+        assert!(compute_hash("unknown_file") == Err("Problem calculating hash!"));
         assert!(compute_hash("./tests/fixtures/file1.avi") == Ok(0x8e245d9679d31e12));
         assert!(compute_hash("./tests/fixtures/file2.bin") == Ok(0x61f7751fc2a72bfb));
     }

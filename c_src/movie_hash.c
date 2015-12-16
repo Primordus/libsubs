@@ -1,11 +1,24 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include "movie_hash.h"
 
 // Algorithm found at:
 // http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 
 #define MAX(x,y) ((x > y) ? (x) : (y))
+
+typedef enum
+{
+    OK,
+    ERROR
+} ResultType;
+
+struct HashResult
+{
+    ResultType type;
+    uint64_t hash;  // the actual hash.
+};
 
 /*
  * Helper function that does the actual computation.
@@ -35,19 +48,52 @@ static uint64_t compute_hash(FILE* const handle)
     return hash;
 }
 
-HashResult calc_hash(const char* const episode_name)
+static HashResult* create_hash(const ResultType type,
+                               const uint64_t value)
+{
+    HashResult* result = (HashResult*) malloc(sizeof(HashResult));
+    if (!result)
+    {
+        return NULL;
+    }
+
+    result->type = type;
+    result->hash = value;
+    return result;
+}
+
+HashResult* calculate_hash(const char* const episode_name)
 {
     FILE* handle = fopen(episode_name, "rb");
     if (!handle)
     {
         fclose(handle);
-        HashResult result = { .type = FILE_NOT_FOUND, .hash = 0 };
-        return result;
+        return create_hash(ERROR, 0);
     }
 
     uint64_t hash = compute_hash(handle);
     fclose(handle);
-    HashResult result = { .type = OK, .hash = hash };
-    return result;
+    return create_hash(OK, hash);
+}
+
+void destroy_hash(HashResult* hash)
+{
+    free(hash);
+}
+
+bool is_valid_hash(const HashResult* const hash)
+{
+    if (hash == NULL || hash->type != OK)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+uint64_t get_hash(const HashResult* const hash)
+{
+    if (is_valid_hash(hash)) return hash->hash;
+    return 0;
 }
 
