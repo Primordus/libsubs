@@ -9,7 +9,7 @@ typedef enum
 typedef struct
 {
     ResultType type;
-    int64_t hash;  // the actual hash.
+    uint64_t hash;  // the actual hash.
 } HashResult;
 
 /*

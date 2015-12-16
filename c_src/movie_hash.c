@@ -11,11 +11,10 @@
  * Helper function that does the actual computation.
  * The file handle should be a valid file handle to an episode!
  */
-static int64_t compute_hash(FILE* const handle)
+static uint64_t compute_hash(FILE* const handle)
 {
     // TODO assert for validness of handle?
-    int64_t hash, file_size, tmp;
-    uint64_t i;
+    uint64_t hash, file_size, tmp, i;
 
     // Calculate file_size:
     fseek(handle, 0, SEEK_END);
@@ -42,12 +41,11 @@ HashResult calc_hash(const char* const episode_name)
     if (!handle)
     {
         fclose(handle);
-        
         HashResult result = { .type = ERROR, .hash = 0 };
         return result;
     }
 
-    int64_t hash = compute_hash(handle);
+    uint64_t hash = compute_hash(handle);
     fclose(handle);
     HashResult result = { .type = OK, .hash = hash };
     return result;

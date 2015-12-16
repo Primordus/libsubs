@@ -1,2 +1,5 @@
 target
 Cargo.lock
+tests/fixtures/*.avi
+tests/fixtures/*.rar
+tests/fixtures/*.bin
