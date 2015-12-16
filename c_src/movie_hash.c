@@ -41,7 +41,7 @@ HashResult calc_hash(const char* const episode_name)
     if (!handle)
     {
         fclose(handle);
-        HashResult result = { .type = ERROR, .hash = 0 };
+        HashResult result = { .type = FILE_NOT_FOUND, .hash = 0 };
         return result;
     }
 

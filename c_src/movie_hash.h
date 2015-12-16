@@ -3,7 +3,7 @@
 typedef enum
 {
     OK,
-    ERROR
+    FILE_NOT_FOUND
 } ResultType;
 
 typedef struct
