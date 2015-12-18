@@ -8,6 +8,6 @@ fn main() {
     println!("Compiling libmovie_hash.a!");
     gcc::Config::new()
         .file("c_src/movie_hash.c")
-        .compile("libmovie_hash.a");  // TODO O3! check build output, panic on fail
+        .compile("libmovie_hash.a");
 }
 
