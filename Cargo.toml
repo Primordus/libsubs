@@ -6,6 +6,7 @@ build = "build.rs"
 
 [dependencies]
 libc = "0.2"
+hyper = "0.7.0"
 
 [dependencies.rustlibxml]
 git = "https://github.com/Primordus/rust-libxml.git"
