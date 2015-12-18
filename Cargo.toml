@@ -7,5 +7,9 @@ build = "build.rs"
 [dependencies]
 libc = "0.2"
 
+[dependencies.rustlibxml]
+git = "https://github.com/Primordus/rust-libxml.git"
+branch = "parse_xml_string"
+
 [build-dependencies]
 gcc = "0.3.20"
