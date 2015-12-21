@@ -11,8 +11,13 @@ extern {
     fn get_hash(hash: *const c_void) -> u64;
 }
 
-pub fn compute_hash(episode: &'static str) -> Result<u64, &'static str> {
+pub fn compute_hash(episode: &str) -> Result<u64, HashError> {
     Hash::new(episode).get()
+}
+
+#[derive(Debug)]
+pub enum HashError {
+    InvalidHash
 }
 
 struct Hash {
@@ -21,22 +26,21 @@ struct Hash {
 
 impl Hash {
 
-    fn new(episode: &'static str) -> Hash {
+    fn new(episode: &str) -> Hash {
         let episode_name = CString::new(episode).unwrap();
         Hash {
             ptr: unsafe { calculate_hash(episode_name.as_ptr()) }
         }
     }
 
-    fn get(&self) -> Result<u64, &'static str> {
+    fn get(&self) -> Result<u64, HashError> {
         unsafe {
             if is_valid_hash(self.ptr) {
                 return Ok(get_hash(self.ptr));
             }
         }
 
-        // TODO make error more descriptive!
-        Err("Problem calculating hash!")
+        Err(HashError::InvalidHash)
     }
 }
 
@@ -58,7 +62,7 @@ fn hashing_test() {
         panic!("Failed to run download script: {}!", e);
     });
 
-    assert_eq!(compute_hash("unknown_file"), Err("Problem calculating hash!"));
-    assert_eq!(compute_hash("./tests/fixtures/file1.avi"), Ok(0x8e245d9679d31e12));
-    assert_eq!(compute_hash("./tests/fixtures/file2.bin"), Ok(0x61f7751fc2a72bfb));
+    assert!(compute_hash("unknown_file").is_err());
+    assert_eq!(compute_hash("./tests/fixtures/file1.avi").unwrap(), 0x8e245d9679d31e12);
+    assert_eq!(compute_hash("./tests/fixtures/file2.bin").unwrap(), 0x61f7751fc2a72bfb);
 }

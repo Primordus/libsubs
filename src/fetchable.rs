@@ -1,9 +1,14 @@
 
 // TODO create separate subtitle error per API which can be converted back to this error..
+#[derive(Debug, PartialEq)]
 pub enum SubtitleError {
     HashError,
     DownloadError(String),
     XmlError,
+    ParseError,
+    FileError(String),
+    NoSubtitlesFound,
+    UnzipError
 }
 
 /*
