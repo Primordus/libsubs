@@ -6,6 +6,8 @@ use super::subtitle::Subtitle;
 use downloader::Download;
 
 use std::env;
+use std::fs::File;
+use std::io::Read;
 use std::cmp::Ordering;
 
 
@@ -61,59 +63,9 @@ fn test_get_sub_list_xml() {
 
 #[test]
 fn test_parse_sub_list_xml() {
-    // TODO move to file
-    let xml1 = r#"
-    <search>
-    <base>http://www.opensubtitles.org/en</base>
-    <results items="1" itemsfound="371117" searchtime="0.01">
-    <subtitle>
-    <download>http://dl.opensubtitles.org/en/download/subad/123456789</download>
-    <detail>
-    /subtitles/123456789/episode_name_here
-    </detail>
-    <iso639>en</iso639>
-    <user/>
-    <releasename>
-    <![CDATA[releasenameinfo here..]]>
-    </releasename>
-    <idsubtitle>123456789</idsubtitle>
-    <subadddate>2015-12-19 03:21:39</subadddate>
-    <subrating>3.5</subrating>
-    <subcomments>
-    <![CDATA[ 0 ]]>
-    </subcomments>
-    <movie>
-    <![CDATA[ "more information about movie here" ]]>
-    </movie>
-    <files>1</files>
-    <format>srt</format>
-    <language>English</language>
-    </subtitle>
-    <subtitle>
-    <download>http://dl.opensubtitles.org/en/download/subad/987654321</download>
-    <detail>
-    /subtitles/987654321/episode_name_here
-    </detail>
-    <iso639>en</iso639>
-    <user/>
-    <releasename>
-    <![CDATA[release name info here..]]>
-    </releasename>
-    <idsubtitle>987654321</idsubtitle>
-    <subadddate>2015-12-19 03:21:39</subadddate>
-    <subrating>4.2</subrating>
-    <subcomments>
-    <![CDATA[ 0 ]]>
-    </subcomments>
-    <movie>
-    <![CDATA[ "more information about movie here" ]]>
-    </movie>
-    <files>1</files>
-    <format>srt</format>
-    <language>English</language>
-    </subtitle>
-    </results>
-    </search>"#;
+    let mut file = File::open("tests/fixtures/parse_sub_list.xml").unwrap();
+    let mut xml1 = String::new();
+    file.read_to_string(&mut xml1);
     let mock_dl = Box::new(MockDownloader::new());
     let os = OpenSubtitles::new(mock_dl);
     let result1 = os.parse_sub_list_xml(xml1.to_string()).unwrap();

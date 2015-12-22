@@ -121,8 +121,7 @@ fn format_episode(episode_name: &str) -> String {
     
     match episode.split(".").last() {
         Some(ext) => {
-            // TODO improve check to see if split contains out of 1 part
-            if ext != result {
+            if file_name_consists_of_multiple_parts(&ext, &result) {
                 return result.replace(ext, "srt");
             }
         }
@@ -130,6 +129,10 @@ fn format_episode(episode_name: &str) -> String {
     }
 
     result + ".srt"
+}
+
+fn file_name_consists_of_multiple_parts(a: &str, b: &str) -> bool {
+    a != b
 }
 
 fn compare_subtitles(sub_a: &Subtitle, sub_b: &Subtitle) -> Ordering {

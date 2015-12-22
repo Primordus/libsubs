@@ -1,0 +1,51 @@
+<search>
+<base>http://www.opensubtitles.org/en</base>
+<results items="1" itemsfound="371117" searchtime="0.01">
+<subtitle>
+<download>http://dl.opensubtitles.org/en/download/subad/123456789</download>
+<detail>
+/subtitles/123456789/episode_name_here
+</detail>
+<iso639>en</iso639>
+<user/>
+<releasename>
+<![CDATA[releasenameinfo here..]]>
+</releasename>
+<idsubtitle>123456789</idsubtitle>
+<subadddate>2015-12-19 03:21:39</subadddate>
+<subrating>3.5</subrating>
+<subcomments>
+<![CDATA[ 0 ]]>
+</subcomments>
+<movie>
+<![CDATA[ "more information about movie here" ]]>
+</movie>
+<files>1</files>
+<format>srt</format>
+<language>English</language>
+</subtitle>
+<subtitle>
+<download>http://dl.opensubtitles.org/en/download/subad/987654321</download>
+<detail>
+/subtitles/987654321/episode_name_here
+</detail>
+<iso639>en</iso639>
+<user/>
+<releasename>
+<![CDATA[release name info here..]]>
+</releasename>
+<idsubtitle>987654321</idsubtitle>
+<subadddate>2015-12-19 03:21:39</subadddate>
+<subrating>4.2</subrating>
+<subcomments>
+<![CDATA[ 0 ]]>
+</subcomments>
+<movie>
+<![CDATA[ "more information about movie here" ]]>
+</movie>
+<files>1</files>
+<format>srt</format>
+<language>English</language>
+</subtitle>
+</results>
+</search>

@@ -54,13 +54,13 @@ pub enum HashError {
 
 impl fmt::Display for HashError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Error calculating hash --> invalid hash!")
+        write!(f, "Error calculating hash")
     }
 }
 
 impl error::Error for HashError {
     fn description(&self) -> &str {
-        ""  // TODO
+        "Invalid subtitle hash"
     }
 }
 
