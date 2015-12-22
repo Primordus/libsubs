@@ -3,6 +3,9 @@ use libc;
 use libc::{c_char, c_void};
 use std::ffi::CString;
 
+use std::fmt;
+use std::error;
+
 #[link(name = "movie_hash", kind = "static")]
 extern {
     fn calculate_hash(episode_name: *const c_char) -> *mut c_void;
@@ -15,17 +18,11 @@ pub fn compute_hash(episode: &str) -> Result<u64, HashError> {
     Hash::new(episode).get()
 }
 
-#[derive(Debug)]
-pub enum HashError {
-    InvalidHash
-}
-
 struct Hash {
     ptr: *mut libc::c_void  // raw void ptr.
 }
 
 impl Hash {
-
     fn new(episode: &str) -> Hash {
         let episode_name = CString::new(episode).unwrap();
         Hash {
@@ -47,6 +44,23 @@ impl Hash {
 impl Drop for Hash {
     fn drop(&mut self) {
         unsafe { destroy_hash(self.ptr); }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub enum HashError {
+    InvalidHash
+}
+
+impl fmt::Display for HashError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Error calculating hash --> invalid hash!")
+    }
+}
+
+impl error::Error for HashError {
+    fn description(&self) -> &str {
+        ""  // TODO
     }
 }
 

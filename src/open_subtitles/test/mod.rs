@@ -5,7 +5,6 @@ use super::compare_subtitles;
 use super::subtitle::Subtitle;
 use downloader::Download;
 
-use std::rc::Rc;
 use std::env;
 use std::cmp::Ordering;
 

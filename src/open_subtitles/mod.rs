@@ -3,7 +3,7 @@
 
 mod movie_hash;
 mod subtitle;
-// TODO mod error;
+pub mod error;
 
 #[cfg(test)]
 mod test;
@@ -11,15 +11,14 @@ mod test;
 // Actual implementation:
 
 use std::cmp::Ordering;
-use std::fs::File;
-use std::io::Write;
 
-use fetchable::{Fetchable, SubtitleError};
-use downloader::Download;
 use xml_parser;
+use downloader::Download;
+use fetchable::Fetchable;
+use subtitle_error::SubtitleError;
 
 use open_subtitles::subtitle::Subtitle;
-
+use open_subtitles::error::Error as OpenSubtitleError;
 
 pub struct OpenSubtitles {
     base_url: String,
@@ -29,13 +28,8 @@ pub struct OpenSubtitles {
 
 impl Fetchable for OpenSubtitles {
     fn fetch(&self, episode_name: &str, language: &str) -> Result<String, SubtitleError> {
-        let hash = try!(self.get_hash(&episode_name)
-                            .map_err(|_e| SubtitleError::HashError));
-        let xml = try!(self.get_sub_list_xml(hash, language)
-                           .map_err(|e| SubtitleError::DownloadError(e)));
-        let mut subtitles = try!(self.parse_sub_list_xml(xml));
-        let zip_location = try!(self.download_best_subtitle(&mut subtitles, &episode_name));
-        self.unzip_and_move(zip_location, &episode_name)
+        let result = try!(self.do_fetch(episode_name, language));
+        Ok(result)
     }
 }
 
@@ -46,6 +40,15 @@ impl OpenSubtitles {
             tmp_dir: "/tmp/".to_string(),
             downloader: dl
         }
+    }
+    
+    fn do_fetch(&self, episode_name: &str, language: &str) -> Result<String, OpenSubtitleError> {
+        let hash = try!(self.get_hash(&episode_name));
+        let xml = try!(self.get_sub_list_xml(hash, language)
+                           .map_err(|e| OpenSubtitleError::DownloadError(e)));
+        let mut subtitles = try!(self.parse_sub_list_xml(xml));
+        let zip_location = try!(self.download_best_subtitle(&mut subtitles, &episode_name));
+        self.unzip_and_move(zip_location, &episode_name)
     }
 
     fn get_hash(&self, episode_name: &str) -> Result<u64, movie_hash::HashError> {
@@ -58,14 +61,12 @@ impl OpenSubtitles {
         self.downloader.download(&url)
     }
 
-    fn parse_sub_list_xml(&self, xml: String) -> Result<Vec<Subtitle>, SubtitleError> {
-        let sub_urls = try!(xml_parser::parse(&xml, "//download/text()")
-                            .map_err(|_e| SubtitleError::XmlError));
-        let sub_ratings = try!(xml_parser::parse(&xml, "//subrating/text()")
-                            .map_err(|_e| SubtitleError::XmlError));
+    fn parse_sub_list_xml(&self, xml: String) -> Result<Vec<Subtitle>, OpenSubtitleError> {
+        let sub_urls = try!(xml_parser::parse(&xml, "//download/text()"));
+        let sub_ratings = try!(xml_parser::parse(&xml, "//subrating/text()"));
 
         if sub_urls.len() == 0 || sub_ratings.len() == 0 {
-            return Err(SubtitleError::NoSubtitlesFound);
+            return Err(OpenSubtitleError::NoSubtitlesFound);
         }
 
         let subtitle_list = sub_urls
@@ -83,13 +84,13 @@ impl OpenSubtitles {
     }
 
     fn download_best_subtitle(&self, subtitles: &mut Vec<Subtitle>, episode_name: &str) 
-                              -> Result<String, SubtitleError> {
+                              -> Result<String, OpenSubtitleError> {
         assert!(subtitles.len() > 0);
         subtitles.sort_by(compare_subtitles);
         subtitles[0].download(&self.downloader, &episode_name)
     }
 
-    fn unzip_and_move(&self, zip_location: String, episode_name: &str) -> Result<String, SubtitleError> {
+    fn unzip_and_move(&self, zip_location: String, episode_name: &str) -> Result<String, OpenSubtitleError> {
         use std::process::Command;
 
         let episode = format_episode(episode_name);
@@ -97,7 +98,7 @@ impl OpenSubtitles {
         let cmd = Command::new("unzip -o ".to_string() + &zip_location 
                                   + " -d " + &unzip_dir).status();
         if cmd.is_err() {
-            return Err(SubtitleError::UnzipError);
+            return Err(OpenSubtitleError::FileError("Problem unzipping to tmp dir!".to_string()));
         }
 
         /*

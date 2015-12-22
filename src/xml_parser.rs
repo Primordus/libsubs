@@ -6,7 +6,7 @@ use rustlibxml::tree::XmlDoc;
 use rustlibxml::parser::xml_cleanup_parser;
 use rustlibxml::xpath::XmlXPathContext;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum XmlError {
     ParseError,
     ContextError,
