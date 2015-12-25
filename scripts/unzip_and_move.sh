@@ -25,7 +25,7 @@ if [ "$WC_OUTPUT" -ne "1" ]; then
 fi
 
 # Move .srt file to the same directory as the episode
-mv $GREP_OUTPUT $SRT_FILE_NAME
+mv "$GREP_OUTPUT" "$SRT_FILE_NAME"
 
 cd -
 exit 0

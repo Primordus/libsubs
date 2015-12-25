@@ -10,7 +10,11 @@ mod test;
 
 // Actual implementation:
 
+use std::str;
+use std::env;
 use std::cmp::Ordering;
+use std::process::Command;
+use std::path::{Path, PathBuf};
 
 use xml_parser;
 use downloader::Download;
@@ -37,7 +41,9 @@ impl OpenSubtitles {
     pub fn new(dl: Box<Download>) -> OpenSubtitles {
         OpenSubtitles {
             base_url: "http://www.opensubtitles.org".to_string(),
-            tmp_dir: "/tmp/".to_string(),
+            tmp_dir: env::temp_dir().into_os_string()
+                                    .into_string()
+                                    .unwrap(),
             downloader: dl
         }
     }
@@ -58,7 +64,11 @@ impl OpenSubtitles {
     fn get_sub_list_xml(&self, movie_hash: u64, language: &str) -> Result<String, String> {
         let url = format!("{}/en/search/sublanguageid-{}/moviehash-{}/simplexml", 
                           self.base_url, language, movie_hash);
-        self.downloader.download(&url)
+        let xml_bytes = try!(self.downloader.download(&url));
+        match str::from_utf8(&xml_bytes) {
+            Ok(result) => Ok(result.to_string()),
+            Err(reason) => Err(format!("Error retrieving subtitle list: {}!", reason))
+        }
     }
 
     fn parse_sub_list_xml(&self, xml: String) -> Result<Vec<Subtitle>, OpenSubtitleError> {
@@ -92,10 +102,10 @@ impl OpenSubtitles {
 
     fn unzip_and_move(&self, zip_location: String, episode_name: &str) -> Result<String, OpenSubtitleError> {
         // TODO refactor this entire function to make it more portable and clear..
-        use std::process::Command;
-        use std::path::Path;
+        let mut episode_abs_path = env::current_dir().unwrap();
+        episode_abs_path.push(PathBuf::from(episode_name));
 
-        // Episode name is absolute path, episode is just the file name
+        // Episode is just the file name
         let episode = Path::new(episode_name)
             .file_name()
             .unwrap()
@@ -106,7 +116,7 @@ impl OpenSubtitles {
         match Command::new("scripts/unzip_and_move.sh")
             .arg(&zip_location)
             .arg(&unzip_dir)
-            .arg(episode_name)
+            .arg(episode_abs_path)
             .status() {
             Err(reason) => {
                 return Err(OpenSubtitleError::FileError(reason.to_string()));
@@ -119,6 +129,7 @@ impl OpenSubtitles {
 
 // Helper functions:
 
+#[allow(dead_code)]
 fn format_episode(episode_name: &str) -> String {
     let episode = episode_name.to_string();
     let result = episode.clone();  // TODO figure out how to remove this copy..
@@ -135,6 +146,7 @@ fn format_episode(episode_name: &str) -> String {
     result + ".srt"
 }
 
+#[allow(dead_code)]
 fn file_name_consists_of_multiple_parts(a: &str, b: &str) -> bool {
     a != b
 }

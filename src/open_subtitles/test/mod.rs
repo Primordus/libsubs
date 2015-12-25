@@ -22,8 +22,8 @@ impl MockDownloader {
 }
 
 impl Download for MockDownloader {
-    fn download(&self, url: &str) -> Result<String, String> {
-        Ok(String::new() + url)
+    fn download(&self, url: &str) -> Result<Vec<u8>, String> {
+        Ok(url.to_string().into_bytes())
     }
 }
 
@@ -118,7 +118,7 @@ fn test_download_best_subtitle() {
     assert_eq!(result, env::temp_dir().into_os_string()
                                       .into_string()
                                       .unwrap()
-                        + episode + ".srt.zip");
+                        + episode + ".zip");
     let best_rating = &subs[0].rating;
     assert!(best_rating > &4.9 && best_rating < &5.1);
 }
