@@ -78,6 +78,7 @@ fn test_parse_sub_list_xml() {
     assert!(rating1_1 > &3.4 && rating1_1 < &3.6);
     assert_eq!(&result1[1].url, "http://dl.opensubtitles.org/en/download/subad/987654321");
     assert!(rating1_2 > &4.1 && rating1_2 < &4.3);
+
     let xml2 = r#"
     <search>
     <base>http://www.opensubtitles.org/en</base>
