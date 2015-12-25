@@ -117,7 +117,7 @@ impl OpenSubtitles {
 
 fn format_episode(episode_name: &str) -> String {
     let episode = episode_name.to_string();
-    let result = episode.clone();  // figure out how to remove this copy..
+    let result = episode.clone();  // TODO figure out how to remove this copy..
     
     match episode.split(".").last() {
         Some(ext) => {

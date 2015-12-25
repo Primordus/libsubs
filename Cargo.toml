@@ -8,9 +8,10 @@ build = "build.rs"
 libc = "0.2"
 hyper = "0.7.0"
 
-[dependencies.rustlibxml]
-git = "https://github.com/Primordus/rust-libxml.git"
-branch = "parse_xml_string"
+[dependencies.libxml]
+git = "https://github.com/dginev/rust-libxml.git"
+branch = "master"
+version = "0.0.2"
 
 [build-dependencies]
 gcc = "0.3.20"

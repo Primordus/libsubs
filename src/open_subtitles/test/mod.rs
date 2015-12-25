@@ -3,7 +3,9 @@ use super::*;
 use super::format_episode;
 use super::compare_subtitles;
 use super::subtitle::Subtitle;
+use super::error::Error as SubError;
 use downloader::Download;
+use xml_parser;
 
 use std::env;
 use std::fs::File;
@@ -65,7 +67,7 @@ fn test_get_sub_list_xml() {
 fn test_parse_sub_list_xml() {
     let mut file = File::open("tests/fixtures/parse_sub_list.xml").unwrap();
     let mut xml1 = String::new();
-    file.read_to_string(&mut xml1);
+    file.read_to_string(&mut xml1).unwrap();
     let mock_dl = Box::new(MockDownloader::new());
     let os = OpenSubtitles::new(mock_dl);
     let result1 = os.parse_sub_list_xml(xml1.to_string()).unwrap();
@@ -76,8 +78,6 @@ fn test_parse_sub_list_xml() {
     assert!(rating1_1 > &3.4 && rating1_1 < &3.6);
     assert_eq!(&result1[1].url, "http://dl.opensubtitles.org/en/download/subad/987654321");
     assert!(rating1_2 > &4.1 && rating1_2 < &4.3);
-
-    /* TODO enable again after using other dependency!
     let xml2 = r#"
     <search>
     <base>http://www.opensubtitles.org/en</base>
@@ -88,7 +88,7 @@ fn test_parse_sub_list_xml() {
     assert!(result2.is_err());
     match result2 {
         Ok(_) => assert!(false),
-        Err(e) => assert_eq!(e, SubtitleError::NoSubtitlesFound)
+        Err(e) => assert_eq!(e, SubError::NoSubtitlesFound)
     }
 
     let xml3 = "insert invalid xml here".to_string();
@@ -96,8 +96,10 @@ fn test_parse_sub_list_xml() {
     assert!(result3.is_err());
     match result3 {
         Ok(_) => assert!(false),
-        Err(e) => assert_eq!(e, SubtitleError::XmlError)
-    }*/
+        Err(e) => {
+            assert_eq!(e, SubError::XmlError(xml_parser::XmlError::ParseError))
+        }
+    }
 }
 
 #[test]

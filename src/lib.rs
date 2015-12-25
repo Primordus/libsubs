@@ -1,6 +1,6 @@
 
 extern crate libc;
-extern crate rustlibxml;
+extern crate libxml as rustlibxml;
 extern crate hyper;
 
 pub mod downloader;

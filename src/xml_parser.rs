@@ -2,9 +2,8 @@
 use std::error::Error;
 use std::fmt;
 
-use rustlibxml::tree::XmlDoc;
-use rustlibxml::parser::xml_cleanup_parser;
-use rustlibxml::xpath::XmlXPathContext;
+use rustlibxml::xpath::Context;
+use rustlibxml::parser::Parser;
 
 #[derive(Debug, PartialEq)]
 pub enum XmlError {
@@ -38,12 +37,11 @@ impl fmt::Display for XmlError {
 
 
 pub fn parse(xml: &str, xpath: &str) -> Result<Vec<String>, XmlError> {
-    let xml_doc = try!(XmlDoc::parse_xml_string(xml).map_err(|_err| XmlError::ParseError));
-    let context = try!(XmlXPathContext::new(&xml_doc).map_err(|_err| XmlError::ContextError));
-    let result = try!(context.evaluate(xpath).map_err(|_err| XmlError::XPathError));
+    let parser = Parser::default();
+    let xml_doc = try!(parser.parse_string(xml).map_err(|_e| XmlError::ParseError));
+    let context = try!(Context::new(&xml_doc).map_err(|_e| XmlError::ContextError));
+    let result = try!(context.evaluate(xpath).map_err(|_e| XmlError::XPathError));
 
-    xml_cleanup_parser();
-    
     Ok(result.get_nodes_as_vec()
              .into_iter()
              .map(|node| node.get_content())
