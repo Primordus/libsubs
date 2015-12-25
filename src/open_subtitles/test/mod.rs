@@ -8,8 +8,10 @@ use downloader::Download;
 use xml_parser;
 
 use std::env;
+use std::fs;
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 use std::cmp::Ordering;
 
 
@@ -123,28 +125,14 @@ fn test_download_best_subtitle() {
 
 #[test]
 fn test_unzip_and_move() {
-    // TODO!
-    
-    /*
-    fn unzip_and_move(&self, zip_location: String) -> Result<String, SubtitleError> {
-        use std::process::Command;
-
-        let episode = "";  // TODO format
-        let unzip_dir = self.tmp_dir.clone() + episode + "/";
-        let cmd = Command::new("unzip -o ".to_string() + &zip_location 
-                                  + " -d " + &unzip_dir).status();
-        if cmd.is_err() {
-            return Err(SubtitleError::UnzipError);
-        }
-
-        /*
-         * TODO
-         * check if that dir now contains a .srt
-         * rename file to episode_name but with extension .srt
-         * print out some information if it has been download or print on error
-         */
-
-        Ok(format!("Downloaded subtitle for {}.", episode))
-    }*/
-
+    let mock_dl = Box::new(MockDownloader::new());
+    let os = OpenSubtitles::new(mock_dl);
+    let dir = env::current_dir().unwrap().into_os_string().into_string().unwrap();
+    let episode = dir.clone() + "/test.mp4";
+    let expected_file = dir.clone() + "/test.srt";
+    let zip_file = "tests/fixtures/test.zip".to_string();
+    os.unzip_and_move(zip_file, &episode).unwrap();
+    assert!(Path::new(&expected_file).exists());
+    fs::remove_file(expected_file).unwrap();
 }
+

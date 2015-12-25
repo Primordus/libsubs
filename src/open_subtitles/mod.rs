@@ -91,24 +91,28 @@ impl OpenSubtitles {
     }
 
     fn unzip_and_move(&self, zip_location: String, episode_name: &str) -> Result<String, OpenSubtitleError> {
+        // TODO refactor this entire function to make it more portable and clear..
         use std::process::Command;
+        use std::path::Path;
 
-        let episode = format_episode(episode_name);
+        // Episode name is absolute path, episode is just the file name
+        let episode = Path::new(episode_name)
+            .file_name()
+            .unwrap()
+            .to_owned()
+            .into_string()
+            .unwrap();
         let unzip_dir = self.tmp_dir.clone() + &episode + "/";
-        let cmd = Command::new("unzip -o ".to_string() + &zip_location 
-                                  + " -d " + &unzip_dir).status();
-        if cmd.is_err() {
-            return Err(OpenSubtitleError::FileError("Problem unzipping to tmp dir!".to_string()));
+        match Command::new("scripts/unzip_and_move.sh")
+            .arg(&zip_location)
+            .arg(&unzip_dir)
+            .arg(episode_name)
+            .status() {
+            Err(reason) => {
+                return Err(OpenSubtitleError::FileError(reason.to_string()));
+            }
+            _ => Ok(format!("Downloaded subtitle for {}.", episode_name))
         }
-
-        /*
-         * TODO
-         * check if that dir now contains a .srt
-         * rename file to episode_name but with extension .srt
-         * print out some information if it has been download or print on error
-         */
-
-        Ok(format!("Downloaded subtitle for {}.", episode))
     }
 }
 
